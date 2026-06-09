@@ -28,7 +28,7 @@ python pwds.py --target example.com --wordlist wordlist.txt --depth 8 --match-co
 ```bash
 --target        Целевой хост или IP-адрес для сканирования (например, 192.168.0.1)
 --wordlist      Путь к файлу словаря (wordlist.txt)
---threads       Количество потоков сканирования (по умолчанию: 40, максимум: 100)
+--threads       Количество потоков сканирования (по умолчанию: 40, максимум: 100)requiere
 --depth         Максимальная глубина рекурсии (по умолчанию: 2)
 --match-codes   Список HTTP статус-кодов через запятую (по умолчанию: 200,301,302,401,403)
 ```
@@ -41,6 +41,8 @@ git clone https://github.com/btwnglxs/pwds
 cd pwds
 
 # 2. Установка необходимых библиотек
+pip install -r requirements.txt
+  или
 pip install requests rich rich-argparse
 
 # 3. Запуск
