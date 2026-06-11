@@ -33,6 +33,17 @@ python pwds.py --target example.com --wordlist wordlist.txt --depth 8 --match-co
 --match-codes   Список HTTP статус-кодов через запятую (по умолчанию: 200,301,302,401,403)
 ```
 
+## Установка и запуск (ELF amd64, Linux)
+
+```bash
+# 1. Клонирование репозитория
+git clone https://github.com/btwnglxs/pwds
+cd pwds
+
+# 2. Запуск
+./pwds --target 192.168.0.1 --wordlist wordlist.txt
+```
+
 ## Установка и запуск (python-скрипт)
 
 ```bash
