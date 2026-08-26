@@ -11,7 +11,7 @@ from rich.console import Console
 import sys
 import queue
 
-pwds_version = "0.3.0"
+pwds_version = "0.3.1"
 
 console = Console(record=True)
 
@@ -36,6 +36,7 @@ parser.add_argument("--user-agent", type=str, help=f"User-Agent for scanning (de
 parser.add_argument("--timeout", type=int, help="Timeout for requests (default: 2)", default=2)
 parser.add_argument("--proxy", type=str, help="Proxy for scanning (default: None)")
 parser.add_argument("--no-recursion", action='store_true', help="Disables recursion (default: False)")
+parser.add_argument("--header","-H", action='append', help="Header to add to all requests (default: None)", default=[])
 
 args = parser.parse_args()
 
@@ -90,6 +91,17 @@ wordlist = list(set(wordlist))
 
 words_per_dir = len(wordlist) * (len(valid_extensions) + 1) if valid_extensions else len(wordlist)
 
+valid_headers = {}
+
+if args.header:
+	for header in args.header:
+		if header.startswith("User-Agent"):
+			print("\n [bold red][!][/] Invalid header: specify [underline bold]User-Agent[/] by [bold cyan]--user-agent[/] flag.")
+			sys.exit(1)
+		elif ":" in header:
+			key, value = header.split(":", 1)
+			valid_headers[key.strip()] = value.strip()
+
 def banner():
 
 	print(rf"""[bold blue]
@@ -100,21 +112,27 @@ def banner():
   | .__/ \_/\_/ \__,_|___/ [bright_black]ver-{pwds_version}[/]
   |_|
 [/]""")
-
 	print("   [bright_black]─────────────────────────────────────────────────────────────────[/]")
 	print("  ")
 	print(f"   [bold white]Target      [/]  [bright_black]{host}[/]")
 	print(f"   [bold white]Wordlist    [/]  [bright_black]{args.wordlist}[/]")
 	print(f"   [bold white]User-Agent  [/]  [bright_black]{args.user_agent}[/]")
 	print(f"   [bold white]Threads     [/]  [bright_black]{THREADS} / 100[/]")
-	print(f"   [bold white]Depth       [/]  [bright_black]{args.depth if args.depth > 1 else "non-recursive"} / ANY[/]")
+	print(f"   [bold white]Depth       [/]  [bright_black]{args.depth if args.depth > 1 else 'non-recursive'} / ANY[/]")
 	print(f"   [bold white]Match Codes [/]  [bright_black]{args.match_codes}[/]")
 	print(f"   [bold white]Timeout     [/]  [bright_black]{args.timeout}[/]")
 	print(f"   [bold white]Extensions  [/]  [bright_black]{args.extensions if args.extensions else '-'}[/]")
 	print(f"   [bold white]Proxy       [/]  [bright_black]{args.proxy if args.proxy else '-'}[/]")
+
+	if valid_headers:
+		for key, value in valid_headers.items():
+			header_name = f"{key}".ljust(12)
+			print(f"   [bold white]{header_name}[/]  [bright_black]{value}[/]")
+	else:
+		print(f"   [bold white]Headers     [/]  [bright_black]-[/]")
+
 	print("  ")
 	print("   [bright_black]─────────────────────────────────────────────────────────────────[/]")
-	#print("\n")
 
 def get_bad_size():
 
@@ -199,6 +217,8 @@ def scan_dir(progress, task_id):
 	adapter = requests.adapters.HTTPAdapter(pool_connections=THREADS, pool_maxsize=THREADS)
 	session.mount("http://", adapter)
 	session.mount("https://", adapter)
+
+	session.headers.update(valid_headers)
 
 	if args.proxy:
 		if args.proxy.startswith(("http://","https://")):
